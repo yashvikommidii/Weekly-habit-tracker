@@ -1,10 +1,35 @@
 const API_BASE = '/api/habits';
+const STORAGE_HABITS = 'habitTracker_habits';
+const STORAGE_ENTRIES = 'habitTracker_entries';
 
 let habits = [];
 let entries = {};
 let habitChart = null;
 let selectedDate = new Date();
 let graphMode = 'weekly';
+
+// === localStorage helpers ===
+function loadHabitsFromStorage() {
+    try {
+        const raw = localStorage.getItem(STORAGE_HABITS);
+        return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+}
+
+function saveHabitsToStorage(data) {
+    localStorage.setItem(STORAGE_HABITS, JSON.stringify(data));
+}
+
+function loadEntriesFromStorage() {
+    try {
+        const raw = localStorage.getItem(STORAGE_ENTRIES);
+        return raw ? JSON.parse(raw) : {};
+    } catch { return {}; }
+}
+
+function saveEntriesToStorage(data) {
+    localStorage.setItem(STORAGE_ENTRIES, JSON.stringify(data));
+}
 
 const HABIT_QUOTES = [
     "Tracking habits isn't about perfection—it's about progress. Every checkmark is a win.",
@@ -54,29 +79,25 @@ function initDatePicker() {
     });
 }
 
-async function fetchHabits() {
-    const res = await fetch(API_BASE);
-    return res.ok ? res.json() : [];
+function fetchHabits() {
+    return Promise.resolve(loadHabitsFromStorage());
 }
 
-async function addHabit(name) {
-    const res = await fetch(API_BASE, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name })
-    });
-    if (!res.ok) throw new Error('Failed to add habit');
-    return res.json();
+function addHabit(name) {
+    const list = loadHabitsFromStorage();
+    const nextId = list.length > 0 ? Math.max(...list.map(h => h.id)) + 1 : 1;
+    const habit = { id: nextId, name: name.trim() };
+    list.push(habit);
+    saveHabitsToStorage(list);
+    return Promise.resolve(habit);
 }
 
-async function logEntry(habitId, dateStr, completed) {
-    const res = await fetch(`${API_BASE}/entries`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ habitId, date: dateStr, completed })
-    });
-    if (!res.ok) throw new Error('Failed to log entry');
-    return res.json();
+function logEntry(habitId, dateStr, completed) {
+    const data = loadEntriesFromStorage();
+    if (!data[habitId]) data[habitId] = {};
+    data[habitId][dateStr] = completed;
+    saveEntriesToStorage(data);
+    return Promise.resolve({ habitId, date: dateStr, completed });
 }
 
 const QUOTES_API = '/api/MotivationalQuotes';
@@ -93,19 +114,39 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-async function fetchGraphData() {
-    const params = new URLSearchParams({ cache: 'no-store' });
+function fetchGraphData() {
+    const list = loadHabitsFromStorage();
+    const entriesData = loadEntriesFromStorage();
+    const total = list.length || 1;
+
     if (graphMode === 'weekly') {
         const start = getWeekStart(selectedDate);
-        params.set('weekStart', getDateStr(start));
-        params.set('mode', 'weekly');
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        return dayNames.map((day, i) => {
+            const d = new Date(start);
+            d.setDate(start.getDate() + i);
+            const dateStr = getDateStr(d);
+            let completed = 0;
+            list.forEach(h => {
+                if (entriesData[h.id]?.[dateStr] === true) completed++;
+            });
+            return { day, completedCount: completed, totalHabits: total };
+        });
     } else {
-        const monthStart = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-01`;
-        params.set('monthStart', monthStart);
-        params.set('mode', 'monthly');
+        const year = selectedDate.getFullYear();
+        const month = selectedDate.getMonth();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const result = [];
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            let completed = 0;
+            list.forEach(h => {
+                if (entriesData[h.id]?.[dateStr] === true) completed++;
+            });
+            result.push({ day: String(day), completedCount: completed, totalHabits: total });
+        }
+        return result;
     }
-    const res = await fetch(`${API_BASE}/graph?${params}`, { cache: 'no-store', headers: { 'Cache-Control': 'no-cache' } });
-    return res.ok ? res.json() : [];
 }
 
 function getEntry(habitId, dateStr) {
@@ -163,7 +204,7 @@ function renderTracker() {
     grid.innerHTML = html;
 
     grid.querySelectorAll('.tracker-cell').forEach(cell => {
-        cell.addEventListener('click', async () => {
+        cell.addEventListener('click', () => {
             const habitId = parseInt(cell.dataset.habitId);
             const dateStr = cell.dataset.date;
             const current = getEntry(habitId, dateStr);
@@ -172,13 +213,14 @@ function renderTracker() {
             else if (current === false) next = true;
             setEntry(habitId, dateStr, next);
             try {
-                await logEntry(habitId, dateStr, next);
+                logEntry(habitId, dateStr, next);
                 renderTracker();
-                await renderGraph();
+                renderGraph();
+                loadAwards();
             } catch (e) {
                 setEntry(habitId, dateStr, current);
                 renderTracker();
-                alert('Could not save. Is the API running?');
+                alert('Could not save to browser storage.');
             }
         });
     });
@@ -268,32 +310,8 @@ async function renderGraph() {
 }
 
 async function loadAndRender() {
-    try {
-        habits = await fetchHabits();
-    } catch {
-        document.getElementById('habitsList').innerHTML =
-            '<p class="empty-state">Could not connect to the API. Make sure the server is running (dotnet run).</p>';
-        document.getElementById('trackerGrid').innerHTML = '';
-        document.getElementById('habitChart').style.display = 'none';
-        document.getElementById('graphEmpty').style.display = 'block';
-        document.getElementById('graphEmpty').textContent = 'Start the server to see your graph.';
-        if (habitChart) { habitChart.destroy(); habitChart = null; }
-        return;
-    }
-    entries = {};
-    const weekDates = getWeekDates();
-    const fromDate = getDateStr(weekDates[0]);
-    const toDate = getDateStr(weekDates[6]);
-    for (const h of habits) {
-        try {
-            const res = await fetch(`${API_BASE}/${h.id}/entries?fromDate=${fromDate}&toDate=${toDate}`);
-            const list = res.ok ? await res.json() : [];
-            entries[h.id] = {};
-            list.forEach(e => { entries[h.id][e.date] = e.completed; });
-        } catch {
-            entries[h.id] = {};
-        }
-    }
+    habits = loadHabitsFromStorage();
+    entries = loadEntriesFromStorage();
     renderHabits();
     renderTracker();
     await renderGraph();
@@ -334,22 +352,62 @@ document.getElementById('whatsUpBtn').addEventListener('click', async () => {
     }
 });
 
-async function fetchAwards() {
-    const monthStart = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-01`;
-    const res = await fetch(`${API_BASE}/awards?monthStart=${encodeURIComponent(monthStart)}`);
-    if (!res.ok) return {};
-    return res.json();
+function fetchAwards() {
+    const list = loadHabitsFromStorage();
+    const entriesData = loadEntriesFromStorage();
+    const year = selectedDate.getFullYear();
+    const month = selectedDate.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const fromStr = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+    const toStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(daysInMonth).padStart(2, '0')}`;
+
+    if (list.length === 0) return { topActivity: null, lowestActivity: null, highestStreakActivity: null };
+
+    const completedByHabit = {};
+    list.forEach(h => { completedByHabit[h.id] = 0; });
+
+    list.forEach(h => {
+        const dates = entriesData[h.id] || {};
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            if (dates[dateStr] === true) completedByHabit[h.id]++;
+        }
+    });
+
+    const sorted = list.map(h => ({ ...h, count: completedByHabit[h.id] })).sort((a, b) => b.count - a.count);
+    const top = sorted[0]?.count > 0 ? sorted[0] : null;
+    const low = sorted.length > 0 ? sorted[sorted.length - 1] : null;
+
+    let bestStreak = 0, streakHabit = null;
+    list.forEach(h => {
+        const dates = (entriesData[h.id] || {});
+        const completedDates = Object.entries(dates)
+            .filter(([, v]) => v === true)
+            .map(([d]) => d)
+            .filter(d => d >= fromStr && d <= toStr)
+            .sort();
+        let maxStreak = 0, streak = 1;
+        for (let i = 1; i < completedDates.length; i++) {
+            const diff = (new Date(completedDates[i]) - new Date(completedDates[i - 1])) / 86400000;
+            if (diff === 1) streak++;
+            else { maxStreak = Math.max(maxStreak, streak); streak = 1; }
+        }
+        maxStreak = Math.max(maxStreak, completedDates.length > 0 ? streak : 0);
+        if (maxStreak > bestStreak) { bestStreak = maxStreak; streakHabit = h; }
+    });
+
+    return {
+        topActivity: top ? { name: top.name, count: top.count } : null,
+        lowestActivity: low ? { name: low.name, count: low.count } : null,
+        highestStreakActivity: streakHabit ? { name: streakHabit.name, count: bestStreak } : null
+    };
 }
 
 async function loadAwards() {
     const container = document.getElementById('awardsContainer');
     if (!container) return;
-    try {
-        const awards = await fetchAwards();
-        renderAwards(awards);
-    } catch (e) {
-        container.innerHTML = '<p class="empty-state">Could not load awards. Add habits and track entries to see them.</p>';
-    }
+    const awards = fetchAwards();
+    renderAwards(awards);
 }
 
 function renderAwards(awards) {
