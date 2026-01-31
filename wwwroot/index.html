@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Habit Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="site-header">
+            <h1>Weekly Habit Tracker</h1>
+            <p class="tagline">Track it. Nail it. Graph it.</p>
+            <div class="whats-up-area">
+                <button id="whatsUpBtn" type="button">What's up?</button>
+                <div id="whatsUpOutput" class="whats-up-output" style="display:none;"></div>
+            </div>
+            <div class="date-selector">
+                <label for="weekDate">Select week</label>
+                <input type="date" id="weekDate" title="Pick a date to view that week">
+            </div>
+        </header>
+
+        <section class="add-habit">
+            <h2>Add a Habit</h2>
+            <div class="input-row">
+                <input type="text" id="habitName" placeholder="e.g. Drink 8 glasses of water">
+                <button id="addHabitBtn">Add Habit</button>
+            </div>
+        </section>
+
+        <section class="habits-section">
+            <h2>Your Habits</h2>
+            <div id="habitsList" class="habit-bubbles"></div>
+        </section>
+
+        <section class="tracker-section">
+            <h2>This Week's Tracker</h2>
+            <p class="hint">Click ✓ if you did it, ✗ if you didn't.</p>
+            <div id="trackerGrid" class="tracker-wrapper"></div>
+        </section>
+
+        <section class="graph-section">
+            <h2>Progress Chart</h2>
+            <div class="graph-mode-toggle">
+                <button type="button" class="graph-mode-btn active" data-mode="weekly">Weekly</button>
+                <button type="button" class="graph-mode-btn" data-mode="monthly">Monthly</button>
+            </div>
+            <div class="graph-container">
+                <div class="graph-scroll-wrap">
+                    <canvas id="habitChart"></canvas>
+                </div>
+                <p id="graphEmpty" class="empty-state" style="display:none;">Log some entries to see your graph.</p>
+            </div>
+        </section>
+
+        <section class="awards-section">
+            <h2>Awards of the Month</h2>
+            <div id="awardsContainer" class="awards-grid"></div>
+        </section>
+
+        <section class="chat-section">
+            <h2>Habit Tracker Assistant</h2>
+            <p class="hint">Ask about your progress, tracking tips, or how to improve your habits.</p>
+            <div id="chatLog" class="chat-log"></div>
+            <div class="chat-input-row">
+                <textarea id="chatInput" placeholder="Ask a question about habit tracking..." rows="2"></textarea>
+                <button id="chatSubmitBtn" type="button">Send</button>
+            </div>
+            <div id="chatLoading" class="chat-loading" style="display:none;">Thinking...</div>
+        </section>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+# Secrets - NEVER commit credentials
+# Copy appsettings.Example.json to appsettings.json and add your connection string
+appsettings.json
+appsettings.Development.json
+
+# Build / IDE
+bin/
+obj/
+.vs/
+*.user
+
+# .NET
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Data (optional - remove if you want to commit habit data)
+Data/
+.DS_Store

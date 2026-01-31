@@ -1,0 +1,675 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* Biosphere 2 inspired: yellow-green, earthy */
+    --bg: #0f1410;
+    --surface: #1a2016;
+    --surface-elevated: #232b1c;
+    --accent: #84cc16;
+    --accent-hover: #a3e635;
+    --accent-muted: rgba(132, 204, 22, 0.15);
+    --success: #65a30d;
+    --success-bg: rgba(101, 163, 13, 0.2);
+    --fail: #ca8a04;
+    --fail-bg: rgba(202, 138, 4, 0.2);
+    --text: #e7e5e4;
+    --text-muted: #a8a29e;
+    --border: #2d3326;
+}
+
+body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem;
+}
+
+/* Header */
+.site-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.site-header h1 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+}
+
+.tagline {
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+    font-size: 1rem;
+}
+
+.whats-up-area {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.whats-up-area #whatsUpBtn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+.whats-up-output {
+    padding: 0.75rem 1.25rem;
+    background: var(--surface-elevated);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    text-align: center;
+    font-size: 0.95rem;
+    max-width: 480px;
+}
+
+.whats-up-output .quote-text {
+    color: var(--text);
+    font-style: italic;
+    margin-bottom: 0.25rem;
+}
+
+.whats-up-output .quote-author {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.hello-world-output {
+    padding: 0.75rem 1rem;
+    background: var(--surface-elevated);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.hello-msg {
+    color: var(--text);
+    margin-bottom: 0.25rem;
+}
+
+.hello-time {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.hello-error {
+    color: var(--fail);
+}
+
+.date-selector {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.date-selector label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.date-selector input {
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 1rem;
+    font-family: inherit;
+}
+
+.date-selector input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-muted);
+}
+
+/* Sections */
+section {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 1.75rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border);
+}
+
+h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text);
+}
+
+.add-habit .input-row {
+    display: flex;
+    gap: 0.75rem;
+}
+
+input[type="text"] {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 1rem;
+    font-family: inherit;
+}
+
+input[type="text"]:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-muted);
+}
+
+button {
+    padding: 0.75rem 1.25rem;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: background 0.2s;
+}
+
+button:hover {
+    background: var(--accent-hover);
+}
+
+.hint {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+/* Habit bubbles */
+.habit-bubbles {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    min-height: 80px;
+}
+
+.habit-bubble {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 90px;
+    max-width: 120px;
+    height: 90px;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, var(--surface-elevated) 0%, var(--surface) 100%);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-align: center;
+    cursor: default;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    color: var(--text);
+    line-height: 1.2;
+    word-break: break-word;
+}
+
+.habit-bubble:hover {
+    transform: scale(1.25);
+    box-shadow: 0 4px 20px rgba(132, 204, 22, 0.2);
+    border-color: var(--accent);
+}
+
+/* Tracker table */
+.tracker-wrapper {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.tracker-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 520px;
+}
+
+.tracker-table thead {
+    background: var(--surface-elevated);
+}
+
+.tracker-table th {
+    padding: 0.85rem 1rem;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--border);
+}
+
+.tracker-table th:first-child {
+    text-align: left;
+    padding-left: 1.25rem;
+}
+
+.tracker-table .date-sub {
+    font-size: 0.7rem;
+    font-weight: 500;
+    opacity: 0.8;
+}
+
+.tracker-table td {
+    padding: 0.75rem 1rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+}
+
+.tracker-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.tracker-table tbody tr:hover td {
+    background: rgba(132, 204, 22, 0.03);
+}
+
+.tracker-table td:first-child {
+    text-align: left;
+    padding-left: 1.25rem;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.tracker-table .total-col {
+    font-weight: 700;
+}
+
+.tracker-table .total-cell {
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.tracker-cell {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    font-size: 1.15rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin: 0 auto;
+}
+
+.tracker-cell:hover {
+    background: var(--accent-muted) !important;
+}
+
+.tracker-cell.did {
+    background: var(--success-bg);
+    color: var(--success);
+}
+
+.tracker-cell.didnt {
+    background: var(--fail-bg);
+    color: var(--fail);
+}
+
+/* Graph */
+.graph-mode-toggle {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.graph-mode-btn {
+    padding: 0.4rem 0.9rem;
+    font-size: 0.9rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.graph-mode-btn:hover {
+    color: var(--text);
+}
+
+.graph-mode-btn.active {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+}
+
+.graph-container {
+    min-height: 280px;
+    padding: 1rem 0;
+    position: relative;
+}
+
+.graph-scroll-wrap {
+    overflow-x: visible;
+    min-height: 260px;
+}
+
+.graph-scroll-wrap canvas {
+    display: block;
+}
+
+#habitChart {
+    height: 260px !important;
+    min-width: 100%;
+}
+
+/* Motivational Quotes table */
+.quotes-table-wrapper {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.quotes-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.quotes-table thead {
+    background: var(--surface-elevated);
+}
+
+.quotes-table th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    border-bottom: 2px solid var(--border);
+}
+
+.quotes-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+}
+
+.quotes-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.quotes-table tbody tr:hover td {
+    background: rgba(132, 204, 22, 0.03);
+}
+
+.quotes-table td:first-child {
+    width: 50px;
+    color: var(--text-muted);
+}
+
+.quotes-table .actions-cell {
+    white-space: nowrap;
+}
+
+.quotes-table .btn-edit,
+.quotes-table .btn-delete {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-right: 0.5rem;
+}
+
+.quotes-table .btn-edit {
+    background: var(--accent-muted);
+    color: var(--accent);
+}
+
+.quotes-table .btn-edit:hover {
+    background: var(--accent);
+    color: var(--bg);
+}
+
+.quotes-table .btn-delete {
+    background: var(--fail-bg);
+    color: var(--fail);
+}
+
+.quotes-table .btn-delete:hover {
+    background: var(--fail);
+    color: var(--bg);
+}
+
+/* Edit Quote Modal */
+.modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+}
+
+.modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    cursor: pointer;
+}
+
+.modal-content {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    max-width: 480px;
+    width: 100%;
+}
+
+.modal-content h3 {
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.modal .form-group {
+    margin-bottom: 1rem;
+}
+
+.modal .form-group label {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.modal .form-group input,
+.modal .form-group textarea {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: inherit;
+}
+
+.modal .form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-top: 1.25rem;
+}
+
+.modal .btn-cancel {
+    padding: 0.5rem 1rem;
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+}
+
+.modal .btn-cancel:hover {
+    background: var(--surface-elevated);
+}
+
+.modal .btn-save {
+    padding: 0.5rem 1rem;
+    background: var(--accent);
+    color: var(--bg);
+}
+
+.modal .btn-save:hover {
+    background: var(--accent-hover);
+}
+
+/* Awards */
+.awards-section h2 {
+    margin-bottom: 1rem;
+}
+
+.awards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.award-card {
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    text-align: center;
+}
+
+.award-icon {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.award-card h4 {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+}
+
+.award-card p {
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+}
+
+.award-count {
+    font-size: 0.85rem;
+    color: var(--accent);
+}
+
+.award-top { border-left: 4px solid var(--accent); }
+.award-low { border-left: 4px solid var(--fail); }
+.award-streak { border-left: 4px solid #f97316; }
+
+/* Chat */
+.chat-section {
+    margin-top: 1rem;
+}
+
+.chat-log {
+    min-height: 180px;
+    max-height: 320px;
+    overflow-y: auto;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.chat-msg {
+    margin-bottom: 0.75rem;
+    padding: 0.6rem 0.9rem;
+    border-radius: 8px;
+    line-height: 1.5;
+}
+
+.chat-user {
+    background: var(--accent-muted);
+    margin-left: 2rem;
+}
+
+.chat-bot {
+    background: var(--surface-elevated);
+    margin-right: 2rem;
+}
+
+.chat-error {
+    color: var(--fail);
+}
+
+.chat-input-row {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-end;
+}
+
+.chat-input-row textarea {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 1rem;
+    resize: vertical;
+    min-height: 48px;
+}
+
+.chat-input-row textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.chat-input-row button {
+    padding: 0.75rem 1.25rem;
+}
+
+.chat-loading {
+    margin-top: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.empty-state {
+    color: var(--text-muted);
+    text-align: center;
+    padding: 2.5rem 2rem;
+    font-size: 0.95rem;
+}
