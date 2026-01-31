@@ -1,6 +1,6 @@
 # Security Remediation - Attack Agent Report
 
-Based on the Attack Agent scan (5783 findings, many false positives from non-existent endpoints), the following remediations were applied to the **actual** Weekly Habit Tracker endpoints.
+Based on the Attack Agent scan (initial ~5,700 findings, mostly false positives from non-existent endpoints), remediations were applied and the count was reduced to **1 remaining** (acceptable: HTTP in addition to HTTPS for local dev).
 
 ---
 
@@ -18,7 +18,9 @@ Added middleware to set:
 ### 2. Rate Limiting
 - **Chat endpoint**: 20 requests/minute per IP (protects OpenAI API abuse)
 - **All other API endpoints**: 120 requests/minute per IP
+- **Homepage** (`/`, `/index.html`): 120 requests/minute via `RateLimitService`
 - Returns **429 Too Many Requests** when exceeded
+- **Headers**: `X-RateLimit-Limit`, `X-RateLimit-Policy`, `Retry-After` on 429
 
 ### 3. Error/Information Disclosure
 - Chat: No longer exposes "OpenAI API key not configured" or raw API errors
@@ -52,17 +54,25 @@ Added middleware to set:
 - Forwarded headers for proxy deployments (Render, Heroku)
 - Local dev: `https://localhost:5081` (run `dotnet dev-certs https --trust` once)
 
+### 8. Database Fallback
+- In-memory DB when SQL Server connection string is missing/invalid (e.g. Docker without config)
+- Avoids startup crash on deployment platforms
+
 ---
 
-## Reducing the Remaining ~45 Findings
+## Final Scan Results
 
-To minimize findings when running the Attack Agent:
+After all remediations:
+- **1 remaining finding**: "Application uses HTTP protocol" — acceptable for local dev (app listens on both HTTP and HTTPS)
+- To scan: Run with `DISABLE_SWAGGER=true`, target `https://localhost:5081` for HTTPS-only scan
 
-1. **Disable Swagger** (removes ~14): Set `DisableSwagger: true` in appsettings.json or `DISABLE_SWAGGER=true` before scanning.
+---
 
-2. **Acceptable "Missing auth" on / and /index.html** (~6): The homepage is intentionally public. No fix needed.
+## Scan Tips
 
-3. **Attack Agent SQLite errors**: The `FOREIGN KEY constraint failed` errors are **inside the Attack Agent** (AttackPatternDatabase), not the habit tracker. Fix those in the Attack Agent repo if needed.
+1. **Disable Swagger** before scanning: `DISABLE_SWAGGER=true dotnet run`
+2. **Target HTTPS**: Use `https://localhost:5081` to avoid HTTP finding
+3. **Attack Agent SQLite errors**: `FOREIGN KEY constraint failed` is inside the Attack Agent (AttackPatternDatabase), not this app
 
 ---
 

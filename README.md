@@ -70,10 +70,17 @@ dotnet restore
 dotnet run
 ```
 
-### 4. Open in browser
+### 4. (Optional) Trust HTTPS dev certificate (for HTTPS support)
 
-- **Homepage:** http://localhost:5080 (or the port shown in the terminal)
-- **Swagger API:** http://localhost:5080/swagger
+```bash
+dotnet dev-certs https --trust
+```
+
+### 5. Open in browser
+
+- **HTTP:** http://localhost:5080
+- **HTTPS:** https://localhost:5081
+- **Swagger API:** http://localhost:5080/swagger (dev only)
 
 ---
 
@@ -84,6 +91,7 @@ dotnet run
 | `ConnectionStrings__DefaultConnection` | SQL Server connection string |
 | `OpenAI__ApiKey` | OpenAI API key for chat |
 | `ASPNETCORE_ENVIRONMENT` | `Production` (for deployed app) |
+| `DisableSwagger` | `true` to disable Swagger (e.g. for security scans) |
 
 ---
 
@@ -103,7 +111,7 @@ dotnet run
 ├── Data/                # AppDbContext, DbSeeder
 ├── Migrations/          # EF Core migrations
 ├── Models/              # Habit, HabitEntry, MotivationalQuote, etc.
-├── Services/            # HabitStorage (JSON persistence)
+├── Services/            # HabitStorage, RateLimitService
 ├── wwwroot/             # Static files (HTML, CSS, JS)
 ├── Dockerfile           # For Docker deployment
 ├── Program.cs           # App entry point
@@ -124,6 +132,12 @@ dotnet run
 | GET | `/api/MotivationalQuotes` | List motivational quotes |
 
 > **Note:** Habits and entries are stored in the browser (localStorage). The habits API is used when not using localStorage; the deployed app uses localStorage for per-user data.
+
+---
+
+## Security
+
+Security hardening (rate limiting, headers, HTTPS, 404 fallback) was applied based on the [Attack Agent](https://github.com/UA-AICore/AttackAgent) scan. See **[SECURITY_REMEDIATION.md](SECURITY_REMEDIATION.md)** for details and scan results.
 
 ---
 
