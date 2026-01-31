@@ -92,6 +92,22 @@ function addHabit(name) {
     return Promise.resolve(habit);
 }
 
+function editHabit(id, newName) {
+    const list = loadHabitsFromStorage();
+    const habit = list.find(h => h.id === id);
+    if (!habit || !newName?.trim()) return;
+    habit.name = newName.trim();
+    saveHabitsToStorage(list);
+}
+
+function deleteHabit(id) {
+    const list = loadHabitsFromStorage().filter(h => h.id !== id);
+    saveHabitsToStorage(list);
+    const entriesData = loadEntriesFromStorage();
+    delete entriesData[id];
+    saveEntriesToStorage(entriesData);
+}
+
 function logEntry(habitId, dateStr, completed) {
     const data = loadEntriesFromStorage();
     if (!data[habitId]) data[habitId] = {};
@@ -165,8 +181,61 @@ function renderHabits() {
         return;
     }
     list.innerHTML = habits.map(h =>
-        `<div class="habit-bubble" title="${h.name}">${h.name}</div>`
+        `<div class="habit-item" data-id="${h.id}">
+            <div class="habit-bubble" title="${escapeHtml(h.name)}">${escapeHtml(h.name)}</div>
+            <div class="habit-actions">
+                <button type="button" class="habit-btn habit-btn-edit" title="Edit habit">Edit</button>
+                <button type="button" class="habit-btn habit-btn-delete" title="Delete habit and all records">Delete</button>
+            </div>
+        </div>`
     ).join('');
+
+    list.querySelectorAll('.habit-btn-edit').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const item = btn.closest('.habit-item');
+            const id = parseInt(item.dataset.id);
+            const habit = habits.find(h => h.id === id);
+            if (habit) showEditHabitModal(id, habit.name);
+        });
+    });
+    list.querySelectorAll('.habit-btn-delete').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const item = btn.closest('.habit-item');
+            const id = parseInt(item.dataset.id);
+            handleDeleteHabit(id);
+        });
+    });
+}
+
+function showEditHabitModal(id, currentName) {
+    const modal = document.getElementById('editHabitModal');
+    document.getElementById('editHabitId').value = id;
+    document.getElementById('editHabitName').value = currentName;
+    modal.style.display = 'flex';
+}
+
+function hideEditHabitModal() {
+    document.getElementById('editHabitModal').style.display = 'none';
+}
+
+async function handleEditHabitSubmit(e) {
+    e.preventDefault();
+    const id = parseInt(document.getElementById('editHabitId').value);
+    const newName = document.getElementById('editHabitName').value?.trim();
+    if (!newName) return;
+    editHabit(id, newName);
+    hideEditHabitModal();
+    await loadAndRender();
+}
+
+async function handleDeleteHabit(id) {
+    const habit = habits.find(h => h.id === id);
+    const name = habit ? habit.name : 'this habit';
+    if (!confirm(`Delete "${name}" and all its tracking records? This cannot be undone.`)) return;
+    deleteHabit(id);
+    await loadAndRender();
 }
 
 function renderTracker() {
@@ -497,7 +566,17 @@ function initChat() {
     });
 }
 
+function initEditHabitModal() {
+    const modal = document.getElementById('editHabitModal');
+    if (!modal) return;
+    modal.querySelectorAll('[data-dismiss="editHabitModal"]').forEach(el => {
+        el.addEventListener('click', hideEditHabitModal);
+    });
+    document.getElementById('editHabitForm')?.addEventListener('submit', handleEditHabitSubmit);
+}
+
 initDatePicker();
 initGraphModeToggle();
+initEditHabitModal();
 initChat();
 loadAndRender();

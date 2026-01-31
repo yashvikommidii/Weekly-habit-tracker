@@ -75,6 +75,24 @@
             <div id="chatLoading" class="chat-loading" style="display:none;">Thinking...</div>
         </section>
     </div>
+
+    <div id="editHabitModal" class="modal" style="display:none;">
+        <div class="modal-backdrop" data-dismiss="editHabitModal"></div>
+        <div class="modal-content">
+            <h3>Edit Habit</h3>
+            <form id="editHabitForm">
+                <input type="hidden" id="editHabitId">
+                <div class="form-group">
+                    <label for="editHabitName">Habit name</label>
+                    <input type="text" id="editHabitName" required placeholder="e.g. Drink 8 glasses of water">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" data-dismiss="editHabitModal">Cancel</button>
+                    <button type="submit" class="btn-save">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
     <script src="app.js"></script>
 </body>
 </html>

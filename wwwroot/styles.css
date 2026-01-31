@@ -238,6 +238,48 @@ button:hover {
     border-color: var(--accent);
 }
 
+.habit-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.habit-item .habit-bubble {
+    margin: 0;
+}
+
+.habit-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.habit-btn {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.habit-btn:hover {
+    background: var(--surface-elevated);
+    color: var(--text);
+}
+
+.habit-btn-edit:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.habit-btn-delete:hover {
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
 /* Tracker table */
 .tracker-wrapper {
     overflow-x: auto;
