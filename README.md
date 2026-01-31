@@ -127,6 +127,4 @@ dotnet run
 
 ---
 
-## License
 
-MIT
