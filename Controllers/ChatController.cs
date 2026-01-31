@@ -117,11 +117,12 @@ public class ChatController : ControllerBase
 
     /// <summary>Send a message to the habit-tracking assistant</summary>
     [HttpPost]
+    [Microsoft.AspNetCore.RateLimiting.EnableRateLimiting("chat")]
     public async Task<ActionResult<ChatResponse>> Post([FromBody] ChatRequest request)
     {
         var apiKey = _config["OpenAI:ApiKey"] ?? Environment.GetEnvironmentVariable("OPENAI_API_KEY");
         if (string.IsNullOrEmpty(apiKey))
-            return StatusCode(500, new ChatResponse { Reply = "OpenAI API key is not configured. Add \"OpenAI\": { \"ApiKey\": \"sk-...\" } to appsettings.json or appsettings.Development.json, or set the OPENAI_API_KEY environment variable." });
+            return StatusCode(500, new ChatResponse { Reply = "The assistant is temporarily unavailable. Please try again later." });
 
         var userData = BuildUserDataContext();
         var systemContent = @"You are a helpful habit-tracking assistant. The user's habit data is prepended to their message. Use it to answer. Never ask them to share data—you already have it. Give specific answers with their habit names and numbers.";
@@ -153,10 +154,11 @@ public class ChatController : ControllerBase
         var response = await _http.SendAsync(httpRequest);
         if (!response.IsSuccessStatusCode)
         {
-            var err = await response.Content.ReadAsStringAsync();
             var msg = response.StatusCode == System.Net.HttpStatusCode.Unauthorized
-                ? "Invalid or expired API key. Check your OpenAI key at platform.openai.com."
-                : $"API error: {response.StatusCode}. {err}";
+                ? "The assistant could not authenticate. Please try again later."
+                : response.StatusCode == System.Net.HttpStatusCode.TooManyRequests
+                    ? "Too many requests. Please wait a moment and try again."
+                    : "The assistant is temporarily unavailable. Please try again later.";
             return StatusCode((int)response.StatusCode, new ChatResponse { Reply = msg });
         }
 

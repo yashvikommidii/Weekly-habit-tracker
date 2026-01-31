@@ -4,6 +4,7 @@ namespace WeeklyHabitTracker.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Microsoft.AspNetCore.RateLimiting.EnableRateLimiting("api")]
 public class HelloWorldController : ControllerBase
 {
     /// <summary>

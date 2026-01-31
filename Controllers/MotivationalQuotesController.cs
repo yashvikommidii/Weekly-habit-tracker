@@ -7,6 +7,7 @@ namespace WeeklyHabitTracker.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Microsoft.AspNetCore.RateLimiting.EnableRateLimiting("api")]
 public class MotivationalQuotesController : ControllerBase
 {
     private readonly AppDbContext _db;
